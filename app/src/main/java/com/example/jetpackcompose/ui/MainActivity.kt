@@ -1,10 +1,9 @@
-package com.example.jetpackcompose
+package com.example.jetpackcompose.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,9 +23,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,10 +45,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.jetpackcompose.R
+import com.example.jetpackcompose.model.Feature
 import com.example.jetpackcompose.ui.theme.JetpackComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -72,18 +74,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MotoristHomeScreen(modifier: Modifier) {
-
-    val features = listOf(
-        "Road & Valet Assist", "Co-Driver Alerts", "Quick Car Valuation",
-        "Insurance Quote", "Used Vehicles", "Traffic Cameras",
-        "Traffic Incidents", "Checkpoint", "Traffic Hot Positions",
-        "Road & Valet Assist", "Co-Driver Alerts", "Quick Car Valuation"
-    )
+fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel = viewModel()) {
+    val features by viewModel.features.collectAsState()
     var expanded by remember { mutableStateOf(false) }
-    val initialCount = 8
+    val initialCount = 10
     val visibleCount = if (expanded) features.size else minOf(initialCount, features.size)
-    val columns = 4
+    val columns = 5
 
     LazyColumn(
         modifier = modifier
@@ -171,7 +167,7 @@ fun BannerWithSearch() {
 
 @Composable
 private fun FeatureGridRows(
-    items: List<String>,
+    items: List<Feature>,
     columns: Int,
     horizontalSpacing: Dp,
     verticalSpacing: Dp,
@@ -187,8 +183,8 @@ private fun FeatureGridRows(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)
             ) {
-                row.forEach { title ->
-                    Box(Modifier.weight(1f)) { FeatureCell(title) }
+                row.forEach { item ->
+                    Box(Modifier.weight(1f)) { FeatureCell(item) }
                 }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }
@@ -197,19 +193,20 @@ private fun FeatureGridRows(
 }
 
 @Composable
-private fun FeatureCell(title: String) {
+private fun FeatureCell(feature: Feature) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f) // ô vuông gọn
             .padding(4.dp)
     ) {
-        Icon(Icons.Default.ShoppingCart, contentDescription = null)
+        Image(painter = painterResource(id = feature.iconRes), contentDescription = null)
         Text(
-            text = title,
+            text = feature.title,
             style = MaterialTheme.typography.labelSmall,
             textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .padding(top = 5.dp)
                 .fillMaxWidth()
