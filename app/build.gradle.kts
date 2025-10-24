@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
 }
 
 android {
@@ -64,4 +65,12 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.0")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
+
+    // cloud firestore
+    implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
+    implementation("com.google.firebase:firebase-firestore")
+
+    // dagger 2
+    implementation("com.google.dagger:dagger:2.52")
+    ksp("com.google.dagger:dagger-compiler:2.52")
 }

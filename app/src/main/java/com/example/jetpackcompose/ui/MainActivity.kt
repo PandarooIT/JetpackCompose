@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -50,22 +51,41 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.jetpackcompose.MVVMApplication
 import com.example.jetpackcompose.R
+import com.example.jetpackcompose.di.component.ActivityComponent
+import com.example.jetpackcompose.di.component.DaggerActivityComponent
+import com.example.jetpackcompose.model.ExploreItem
 import com.example.jetpackcompose.model.Feature
 import com.example.jetpackcompose.ui.theme.JetpackComposeTheme
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var vmFactory: ViewModelProvider.Factory
+    private lateinit var activityComponent: ActivityComponent
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val appComponent = (application as MVVMApplication).appComponent
+        activityComponent = DaggerActivityComponent.factory()
+            .create(appComponent, this)
+
+        activityComponent.inject(this)
+
         enableEdgeToEdge()
         setContent {
             JetpackComposeTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
+
+                    val homeViewModel: HomeViewModel = viewModel(factory = vmFactory)
                     MotoristHomeScreen(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        homeViewModel
                     )
                 }
             }
@@ -74,8 +94,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel = viewModel()) {
+fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
     val features by viewModel.features.collectAsState()
+    val exploreItems by viewModel.exploreItems.collectAsState()
+
     var expanded by remember { mutableStateOf(false) }
     val initialCount = 10
     val visibleCount = if (expanded) features.size else minOf(initialCount, features.size)
@@ -121,7 +143,7 @@ fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel = viewModel(
 
         // 5. Big Feature Row
         item {
-            ExploringSection()
+            ExploringSection(exploreItems)
         }
     }
 }
@@ -280,9 +302,9 @@ fun AdvertisementSection() {
 }
 
 @Composable
-fun ExploringSection() {
-    val numberOfItems = 10
-
+fun ExploringSection(
+    items: List<ExploreItem>
+) {
     Column (
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -294,17 +316,17 @@ fun ExploringSection() {
         LazyRow (
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            items(numberOfItems) { item ->
-                ItemExplore()
+            items(items) { item ->
+                ItemExplore(item)
             }
         }
     }
 }
 
 @Composable
-fun ItemExplore() {
+fun ItemExplore(item: ExploreItem) {
     Image(
-        painter = painterResource(id = R.drawable.ic_background_motorist),
+        painter = painterResource(id = item.iconRes),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
@@ -318,6 +340,6 @@ fun ItemExplore() {
 @Composable
 fun GreetingPreview() {
     JetpackComposeTheme {
-        MotoristHomeScreen(modifier = Modifier)
+//        MotoristHomeScreen(modifier = Modifier, hom)
     }
 }
