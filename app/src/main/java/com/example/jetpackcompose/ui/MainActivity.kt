@@ -79,7 +79,6 @@ class MainActivity : ComponentActivity() {
         val appComponent = (application as MVVMApplication).appComponent
         activityComponent = DaggerActivityComponent.factory()
             .create(appComponent, this)
-
         activityComponent.inject(this)
 
         enableEdgeToEdge()
@@ -121,7 +120,21 @@ fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
     val visibleCount = if (expanded) filteredItems.size else minOf(initialCount, filteredItems.size)
     val columns = 5
 
+    /*
+    Explanation
+    1.State
+    features (State is converted by StateFlow)
+    query and filteredItems are rememberSaveable and remember
+    visible count depends on expanded (expanded is remember too)
 
+    2. Interval mechanics
+    every 5s, features change -> recompose
+    FeatureGridRows is built based on filteredItems and visibleCount
+
+    3. Recomposition mechanics
+    if filteredItems and visibleCount change
+    FeatureGridRows will be recomposed with the states (expanded and query) is the same at the last changes
+    */
 
     LazyColumn(
         modifier = modifier
@@ -135,7 +148,7 @@ fun MotoristHomeScreen(modifier: Modifier, viewModel: HomeViewModel) {
             BannerWithSearch(
                 query = query,
                 onQueryChange = { query = it },
-                onSearch = { /* optional: trigger analytics/search */ }
+                onSearch = {}
             )
         }
 
@@ -189,7 +202,6 @@ fun BannerWithSearch(
             modifier = Modifier
                 .zIndex(0f)
                 .fillMaxWidth()
-//                .fillMaxHeight()
         )
 
         Surface(
