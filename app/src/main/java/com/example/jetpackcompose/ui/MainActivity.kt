@@ -1,6 +1,7 @@
 package com.example.jetpackcompose.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -67,6 +68,8 @@ import com.example.jetpackcompose.di.component.DaggerActivityComponent
 import com.example.jetpackcompose.model.ExploreItem
 import com.example.jetpackcompose.model.Feature
 import com.example.jetpackcompose.ui.theme.JetpackComposeTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
@@ -80,6 +83,8 @@ class MainActivity : ComponentActivity() {
         activityComponent = DaggerActivityComponent.factory()
             .create(appComponent, this)
         activityComponent.inject(this)
+
+        testingFirebaseStore()
 
         enableEdgeToEdge()
         setContent {
@@ -96,6 +101,38 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun testingFirebaseStore() {
+        val db = Firebase.firestore
+
+        val feature = Feature(
+            id = 1,
+            iconRes = R.drawable.ic_traffic_camera,
+            title = "Smart Parking"
+        )
+
+        // add
+//        db.collection("features")
+//            .add(feature)
+//            .addOnSuccessListener { docRef ->
+//                Log.d("Firestore", "Document added with ID: ${docRef.id}")
+//            }
+//            .addOnFailureListener { e ->
+//                Log.w("Firestore", "Error adding document", e)
+//            }
+
+        // get
+        db.collection("features")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    Log.d("Firestore-Get", "${document.id} => ${document.data}")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("Firestore-Get", "Error getting documents.", exception)
+            }
     }
 }
 
